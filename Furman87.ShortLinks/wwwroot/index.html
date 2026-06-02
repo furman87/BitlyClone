@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>go.furman87.com</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="panel" aria-labelledby="title">
+      <p class="eyebrow">furman87 short links</p>
+      <h1 id="title">Make a long URL behave.</h1>
+      <form id="shorten-form" class="form">
+        <label for="url-input">Destination URL</label>
+        <div class="input-row">
+          <input id="url-input" name="url" type="url" inputmode="url" autocomplete="url" placeholder="https://example.com/very/long/link" required>
+          <button type="submit">Shorten</button>
+        </div>
+      </form>
+
+      <div class="result-block">
+        <label for="short-url">Short URL</label>
+        <div class="input-row">
+          <input id="short-url" type="text" readonly placeholder="Your short URL will appear here">
+          <button id="copy-button" type="button" disabled>Copy</button>
+        </div>
+      </div>
+
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

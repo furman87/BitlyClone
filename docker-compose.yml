@@ -1,7 +1,7 @@
 services:
   app:
     build:
-      context: ./Furman87.ShortLinks
+      context: ./ShortLinks
     container_name: furman87-shortlinks-app
     depends_on:
       db:
@@ -11,7 +11,7 @@ services:
       ConnectionStrings__Default: Host=db;Port=5432;Database=shortlinks;Username=shortlinks;Password=${POSTGRES_PASSWORD:-change-me-now}
       PublicBaseUrl: ${PUBLIC_BASE_URL:-https://go.furman87.com}
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     restart: unless-stopped
 
   db:

@@ -1,4 +1,4 @@
-# Furman87 Short Links
+# ShortLinks
 
 A small Bitly-style shortener for a personal server. My favorite short subdomain for this is `go.furman87.com`: it is short, memorable, and reads naturally when pasted into a message. Other good options are `ln.furman87.com`, `zip.furman87.com`, `hop.furman87.com`, and `s.furman87.com`.
 
@@ -12,17 +12,9 @@ docker compose up --build
 
 The app listens on `http://localhost:8080` by default. Put your reverse proxy in front of it and point `go.furman87.com` to the proxy.
 
-## Ubuntu 24 Production Notes
+## Deployment
 
-This compose file is ready to run on Ubuntu 24 with Docker Engine and the Docker Compose plugin installed. The app and database containers use Linux images, so you can copy the project folder to the server, create an `.env` file beside `docker-compose.yml`, and run:
-
-```bash
-POSTGRES_PASSWORD='replace-with-a-long-random-password'
-PUBLIC_BASE_URL='https://go.furman87.com'
-docker compose up -d --build
-```
-
-For a public server, bind HTTPS in a reverse proxy and forward traffic to `http://127.0.0.1:8080`.
+See [DEPLOYMENT.md](DEPLOYMENT.md) for Ubuntu 24 instructions using `/opt/shortlinks`, nginx, Certbot, Docker Compose, and `go.furman87.com`.
 
 ## Security Notes
 

@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-COPY Furman87.ShortLinks.csproj .
+COPY ShortLinks.csproj .
 RUN dotnet restore
 
 COPY . .
@@ -16,4 +16,4 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /app/publish .
-ENTRYPOINT ["dotnet", "Furman87.ShortLinks.dll"]
+ENTRYPOINT ["dotnet", "ShortLinks.dll"]

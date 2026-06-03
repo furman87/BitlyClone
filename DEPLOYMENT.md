@@ -106,6 +106,12 @@ Generate a strong Postgres password:
 openssl rand -base64 48
 ```
 
+Generate a separate strong admin password:
+
+```bash
+openssl rand -base64 36
+```
+
 Edit `.env`:
 
 ```bash
@@ -117,9 +123,13 @@ Set values like this:
 ```text
 POSTGRES_PASSWORD=paste-your-generated-password-here
 PUBLIC_BASE_URL=https://go.furman87.com
+ADMIN_USERNAME=your-admin-user-name
+ADMIN_PASSWORD=paste-your-admin-password-here
 ```
 
 Important: choose the password before the first `docker compose up`. Postgres uses `POSTGRES_PASSWORD` when the database volume is initialized. If you change it later, the existing database user's password inside the persisted volume is not automatically changed.
+
+The admin page is available at `https://go.furman87.com/admin`. There is no link to it from the public home page. The browser will ask for the `ADMIN_USERNAME` and `ADMIN_PASSWORD` values using HTTP Basic Auth.
 
 ## 5. Start Docker Compose
 

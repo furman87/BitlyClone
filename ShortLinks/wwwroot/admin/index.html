@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ShortLinks Admin</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+  <main class="admin-shell">
+    <section class="admin-header" aria-labelledby="admin-title">
+      <div>
+        <p class="eyebrow">private console</p>
+        <h1 id="admin-title">ShortLinks Admin</h1>
+      </div>
+      <div class="admin-count" id="result-count">0 links</div>
+    </section>
+
+    <section class="admin-panel">
+      <label for="search-input">Search links</label>
+      <input id="search-input" type="search" autocomplete="off" placeholder="Search code, URL, or IP">
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th><button class="sort-button" data-sort="code" type="button">Code</button></th>
+              <th><button class="sort-button" data-sort="targetUrl" type="button">Destination</button></th>
+              <th><button class="sort-button" data-sort="clickCount" type="button">Clicks</button></th>
+              <th><button class="sort-button" data-sort="createdAt" type="button">Created</button></th>
+              <th><button class="sort-button" data-sort="lastClickedAt" type="button">Last Click</button></th>
+              <th><button class="sort-button" data-sort="createdIp" type="button">IP</button></th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="links-body">
+            <tr>
+              <td colspan="7" class="empty-cell">Loading links...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p id="admin-status" class="status" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <dialog id="edit-dialog">
+    <form id="edit-form" method="dialog">
+      <h2>Edit Link</h2>
+      <p id="edit-code" class="edit-code"></p>
+      <label for="edit-target">Destination URL</label>
+      <textarea id="edit-target" rows="5" required></textarea>
+      <div class="dialog-actions">
+        <button id="cancel-edit" class="secondary-button" type="button">Cancel</button>
+        <button type="submit">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="/admin/admin.js"></script>
+</body>
+</html>

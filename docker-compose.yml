@@ -10,6 +10,8 @@ services:
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__Default: Host=db;Port=5432;Database=shortlinks;Username=shortlinks;Password=${POSTGRES_PASSWORD:-change-me-now}
       PublicBaseUrl: ${PUBLIC_BASE_URL:-https://go.furman87.com}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
     ports:
       - "127.0.0.1:8080:8080"
     restart: unless-stopped

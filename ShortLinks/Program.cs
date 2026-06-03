@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Security.Cryptography;
+using System.Text;
 using Dapper;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
@@ -37,6 +38,29 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 var app = builder.Build();
 
 app.UseForwardedHeaders();
+app.UseWhen(
+    context => context.Request.Path.StartsWithSegments("/admin") || context.Request.Path.StartsWithSegments("/api/admin"),
+    protectedApp => protectedApp.Use(async (context, next) =>
+    {
+        if (!AdminAuth.IsAuthorized(context, app.Configuration))
+        {
+            context.Response.Headers.WWWAuthenticate = "Basic realm=\"ShortLinks Admin\", charset=\"UTF-8\"";
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await context.Response.WriteAsync("Authentication required.");
+            return;
+        }
+
+        await next(context);
+    }));
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path == "/admin/")
+    {
+        context.Request.Path = "/admin/index.html";
+    }
+
+    await next(context);
+});
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseRateLimiter();
@@ -91,6 +115,93 @@ app.MapPost("/api/links", async (
     })
     .RequireRateLimiting("create-link");
 
+app.MapGet("/admin", (IWebHostEnvironment environment) =>
+    Results.File(Path.Combine(environment.WebRootPath, "admin", "index.html"), "text/html"))
+    .WithOrder(-100);
+
+app.MapGet("/api/admin/links", async (
+        HttpContext httpContext,
+        NpgsqlDataSource dataSource,
+        IConfiguration configuration,
+        string? search,
+        string? sort,
+        string? dir) =>
+    {
+        var orderBy = AdminQueries.GetOrderBy(sort, dir);
+        var publicBaseUrl = GetPublicBaseUrl(configuration, httpContext.Request);
+        var searchTerm = string.IsNullOrWhiteSpace(search) ? null : $"%{search.Trim()}%";
+
+        await using var connection = await dataSource.OpenConnectionAsync(httpContext.RequestAborted);
+        var links = await connection.QueryAsync<AdminLinkRow>(
+            $"""
+            SELECT
+                code,
+                target_url AS TargetUrl,
+                created_at AS CreatedAt,
+                created_ip::text AS CreatedIp,
+                click_count AS ClickCount,
+                last_clicked_at AS LastClickedAt
+            FROM short_links
+            WHERE @Search IS NULL
+               OR code ILIKE @Search
+               OR target_url ILIKE @Search
+               OR created_ip::text ILIKE @Search
+            ORDER BY {orderBy}
+            LIMIT 250
+            """,
+            new { Search = searchTerm });
+
+        return Results.Ok(links.Select(link => new AdminLinkResponse(
+            link.Code,
+            link.TargetUrl,
+            $"{publicBaseUrl}/{link.Code}",
+            link.CreatedAt,
+            link.CreatedIp,
+            link.ClickCount,
+            link.LastClickedAt)));
+    });
+
+app.MapPut("/api/admin/links/{code:regex(^[A-Za-z0-9]{{6,12}}$)}", async (
+        string code,
+        AdminUpdateLinkRequest request,
+        HttpContext httpContext,
+        NpgsqlDataSource dataSource,
+        UrlSafetyValidator validator) =>
+    {
+        var validation = await validator.ValidateAsync(request.TargetUrl);
+        if (!validation.IsValid || validation.NormalizedUrl is null)
+        {
+            return Results.BadRequest(new ErrorResponse(validation.Error ?? "The supplied URL is not allowed."));
+        }
+
+        await using var connection = await dataSource.OpenConnectionAsync(httpContext.RequestAborted);
+        var rows = await connection.ExecuteAsync(
+            """
+            UPDATE short_links
+            SET target_url = @TargetUrl
+            WHERE code = @Code
+            """,
+            new { Code = code, TargetUrl = validation.NormalizedUrl });
+
+        return rows == 0 ? Results.NotFound(new ErrorResponse("Short link not found.")) : Results.NoContent();
+    });
+
+app.MapDelete("/api/admin/links/{code:regex(^[A-Za-z0-9]{{6,12}}$)}", async (
+        string code,
+        HttpContext httpContext,
+        NpgsqlDataSource dataSource) =>
+    {
+        await using var connection = await dataSource.OpenConnectionAsync(httpContext.RequestAborted);
+        var rows = await connection.ExecuteAsync(
+            """
+            DELETE FROM short_links
+            WHERE code = @Code
+            """,
+            new { Code = code });
+
+        return rows == 0 ? Results.NotFound(new ErrorResponse("Short link not found.")) : Results.NoContent();
+    });
+
 app.MapGet("/{code:regex(^[A-Za-z0-9]{{6,12}}$)}", async (
         string code,
         HttpContext httpContext,
@@ -134,7 +245,107 @@ internal sealed record ShortenResponse(string Code, string ShortUrl);
 
 internal sealed record ErrorResponse(string Error);
 
+internal sealed record AdminUpdateLinkRequest([property: Required, Url, MaxLength(2048)] string TargetUrl);
+
+internal sealed class AdminLinkRow
+{
+    public string Code { get; set; } = string.Empty;
+
+    public string TargetUrl { get; set; } = string.Empty;
+
+    public DateTimeOffset CreatedAt { get; set; }
+
+    public string? CreatedIp { get; set; }
+
+    public long ClickCount { get; set; }
+
+    public DateTimeOffset? LastClickedAt { get; set; }
+}
+
+internal sealed record AdminLinkResponse(
+    string Code,
+    string TargetUrl,
+    string ShortUrl,
+    DateTimeOffset CreatedAt,
+    string? CreatedIp,
+    long ClickCount,
+    DateTimeOffset? LastClickedAt);
+
 internal sealed record UrlValidationResult(bool IsValid, string? NormalizedUrl = null, string? Error = null);
+
+internal static class AdminAuth
+{
+    public static bool IsAuthorized(HttpContext context, IConfiguration configuration)
+    {
+        var expectedUsername = configuration["Admin:Username"] ?? configuration["ADMIN_USERNAME"];
+        var expectedPassword = configuration["Admin:Password"] ?? configuration["ADMIN_PASSWORD"];
+
+        if (string.IsNullOrWhiteSpace(expectedUsername) || string.IsNullOrWhiteSpace(expectedPassword))
+        {
+            return false;
+        }
+
+        if (!context.Request.Headers.Authorization.ToString().StartsWith("Basic ", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var encodedCredentials = context.Request.Headers.Authorization.ToString()["Basic ".Length..].Trim();
+        string decodedCredentials;
+        try
+        {
+            decodedCredentials = Encoding.UTF8.GetString(Convert.FromBase64String(encodedCredentials));
+        }
+        catch
+        {
+            return false;
+        }
+
+        var separatorIndex = decodedCredentials.IndexOf(':');
+        if (separatorIndex <= 0)
+        {
+            return false;
+        }
+
+        var username = decodedCredentials[..separatorIndex];
+        var password = decodedCredentials[(separatorIndex + 1)..];
+
+        return FixedTimeEquals(username, expectedUsername) && FixedTimeEquals(password, expectedPassword);
+    }
+
+    private static bool FixedTimeEquals(string left, string right)
+    {
+        var leftBytes = Encoding.UTF8.GetBytes(left);
+        var rightBytes = Encoding.UTF8.GetBytes(right);
+
+        return leftBytes.Length == rightBytes.Length
+            && CryptographicOperations.FixedTimeEquals(leftBytes, rightBytes);
+    }
+}
+
+internal static class AdminQueries
+{
+    private static readonly Dictionary<string, string> SortColumns = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["code"] = "code",
+        ["targetUrl"] = "target_url",
+        ["shortUrl"] = "code",
+        ["createdAt"] = "created_at",
+        ["createdIp"] = "created_ip",
+        ["clickCount"] = "click_count",
+        ["lastClickedAt"] = "last_clicked_at"
+    };
+
+    public static string GetOrderBy(string? sort, string? dir)
+    {
+        var column = !string.IsNullOrWhiteSpace(sort) && SortColumns.TryGetValue(sort, out var mapped)
+            ? mapped
+            : "created_at";
+        var direction = string.Equals(dir, "asc", StringComparison.OrdinalIgnoreCase) ? "ASC" : "DESC";
+
+        return $"{column} {direction}, code ASC";
+    }
+}
 
 internal sealed class LinkCodeGenerator
 {

@@ -1,0 +1,206 @@
+.admin-shell {
+  width: min(100% - 32px, 1240px);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 40px 0;
+}
+
+.admin-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.admin-header h1 {
+  margin-bottom: 0;
+  font-size: clamp(2rem, 5vw, 4rem);
+}
+
+.admin-count {
+  min-width: 120px;
+  border: 1px solid rgba(72, 126, 150, 0.38);
+  border-radius: 8px;
+  background: rgba(16, 31, 45, 0.82);
+  color: var(--accent-strong);
+  font-weight: 800;
+  padding: 12px 16px;
+  text-align: center;
+}
+
+.admin-panel {
+  background: linear-gradient(160deg, rgba(16, 31, 45, 0.96), rgba(12, 22, 32, 0.98));
+  border: 1px solid rgba(72, 126, 150, 0.38);
+  border-radius: 8px;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.4);
+  padding: 24px;
+}
+
+.admin-panel > input {
+  margin: 10px 0 18px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid rgba(72, 126, 150, 0.24);
+  border-radius: 8px;
+}
+
+table {
+  width: 100%;
+  min-width: 980px;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border-bottom: 1px solid rgba(72, 126, 150, 0.24);
+  padding: 12px 14px;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: rgba(6, 14, 22, 0.72);
+  color: var(--accent-strong);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+}
+
+tbody tr:hover {
+  background: rgba(33, 199, 183, 0.06);
+}
+
+.sort-button {
+  height: auto;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.sort-button:hover:not(:disabled) {
+  background: transparent;
+  color: var(--accent);
+  transform: none;
+}
+
+.sort-button.active::after {
+  content: attr(data-direction);
+  display: inline-block;
+  margin-left: 6px;
+  color: var(--accent);
+}
+
+.code-cell {
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.url-cell {
+  max-width: 440px;
+}
+
+.url-cell a {
+  color: var(--accent-strong);
+  overflow-wrap: anywhere;
+}
+
+.muted-cell {
+  color: #a8bac4;
+  white-space: nowrap;
+}
+
+.action-row {
+  display: flex;
+  gap: 8px;
+}
+
+.small-button,
+.danger-button,
+.secondary-button {
+  height: 38px;
+  padding: 0 12px;
+}
+
+.secondary-button {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--accent-strong);
+}
+
+.danger-button {
+  background: var(--danger);
+  color: #260705;
+}
+
+.empty-cell {
+  color: #a8bac4;
+  padding: 28px 14px;
+  text-align: center;
+}
+
+dialog {
+  width: min(100% - 32px, 720px);
+  border: 1px solid rgba(72, 126, 150, 0.5);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 0;
+}
+
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.68);
+}
+
+dialog form {
+  display: grid;
+  gap: 14px;
+  padding: 24px;
+}
+
+dialog h2 {
+  margin: 0;
+}
+
+.edit-code {
+  margin: 0;
+  color: var(--accent-strong);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-weight: 800;
+}
+
+textarea {
+  width: 100%;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--field);
+  color: var(--ink);
+  padding: 14px 16px;
+  font: inherit;
+}
+
+textarea:focus {
+  border-color: var(--accent);
+  outline: 3px solid rgba(33, 199, 183, 0.2);
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: end;
+  gap: 10px;
+}
+
+@media (max-width: 720px) {
+  .admin-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-count {
+    text-align: left;
+  }
+}

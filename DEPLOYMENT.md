@@ -57,7 +57,25 @@ sudo mkdir -p /opt/shortlinks
 sudo chown -R "$USER":"$USER" /opt/shortlinks
 ```
 
-Copy the project files into `/opt/shortlinks`. From your development machine, one simple option is `scp`:
+Get the project files into `/opt/shortlinks`.
+
+Option A: clone from GitHub on the server:
+
+```bash
+cd /opt
+git clone https://github.com/your-github-user/your-repo-name.git shortlinks
+cd /opt/shortlinks
+```
+
+If the repository is private, use an SSH clone URL instead:
+
+```bash
+cd /opt
+git clone git@github.com:your-github-user/your-repo-name.git shortlinks
+cd /opt/shortlinks
+```
+
+Option B: copy from your development machine with `scp`:
 
 ```bash
 scp -r ./BitlyClone/* your-user@your-server:/opt/shortlinks/

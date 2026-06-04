@@ -1,6 +1,6 @@
 # Ubuntu 24 Deployment
 
-These notes assume the app will run from `/opt/shortlinks`, nginx is installed directly on the Ubuntu 24 server, Certbot manages TLS certificates, and the public URL is `https://go.furman87.com`.
+These notes assume the app will run from `/opt/shortlinks`, nginx is installed directly on the Ubuntu 24 server, Certbot manages TLS certificates, and the public URL is `https://go.fu87.app`.
 
 ## 1. DNS
 
@@ -17,7 +17,7 @@ If you use IPv6, also add an `AAAA` record for `go`.
 Wait until DNS resolves before requesting a certificate:
 
 ```bash
-dig go.furman87.com
+dig go.fu87.app
 ```
 
 ## 2. Server Packages
@@ -122,14 +122,14 @@ Set values like this:
 
 ```text
 POSTGRES_PASSWORD=paste-your-generated-password-here
-PUBLIC_BASE_URL=https://go.furman87.com
+PUBLIC_BASE_URL=https://go.fu87.app
 ADMIN_USERNAME=your-admin-user-name
 ADMIN_PASSWORD=paste-your-admin-password-here
 ```
 
 Important: choose the password before the first `docker compose up`. Postgres uses `POSTGRES_PASSWORD` when the database volume is initialized. If you change it later, the existing database user's password inside the persisted volume is not automatically changed.
 
-The admin page is available at `https://go.furman87.com/admin`. There is no link to it from the public home page. The browser will ask for the `ADMIN_USERNAME` and `ADMIN_PASSWORD` values using HTTP Basic Auth.
+The admin page is available at `https://go.fu87.app/admin`. There is no link to it from the public home page. The browser will ask for the `ADMIN_USERNAME` and `ADMIN_PASSWORD` values using HTTP Basic Auth.
 
 ## 5. Start Docker Compose
 
@@ -175,7 +175,7 @@ Use this config:
 server {
     listen 80;
     listen [::]:80;
-    server_name go.furman87.com;
+    server_name go.fu87.app;
 
     location / {
         proxy_pass http://127.0.0.1:8080;
@@ -209,7 +209,7 @@ sudo systemctl reload nginx
 Request and install the certificate:
 
 ```bash
-sudo certbot --nginx -d go.furman87.com
+sudo certbot --nginx -d go.fu87.app
 ```
 
 Choose the redirect-to-HTTPS option when prompted.
@@ -259,7 +259,7 @@ Check the result:
 ```bash
 docker compose ps
 docker compose logs --tail 100 app
-curl -I https://go.furman87.com
+curl -I https://go.fu87.app
 ```
 
 Clean old Docker build cache occasionally:

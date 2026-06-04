@@ -373,7 +373,7 @@ internal sealed class UrlSafetyValidator
     {
         "localhost",
         "localhost.localdomain",
-        "furman87.com"
+        "fu87.app"
     };
 
     public async Task<UrlValidationResult> ValidateAsync(string? submittedUrl)
@@ -405,7 +405,7 @@ internal sealed class UrlSafetyValidator
             return new(false, Error: "URLs with embedded usernames or passwords are not allowed.");
         }
 
-        if (BlockedHosts.Contains(uri.Host) || uri.Host.EndsWith(".furman87.com", StringComparison.OrdinalIgnoreCase))
+        if (BlockedHosts.Contains(uri.Host) || uri.Host.EndsWith(".fu87.app", StringComparison.OrdinalIgnoreCase))
         {
             return new(false, Error: "This service cannot shorten its own domain.");
         }

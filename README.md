@@ -1,24 +1,24 @@
 # ShortLinks
 
-A small Bitly-style shortener for a personal server. My favorite short subdomain for this is `go.furman87.com`: it is short, memorable, and reads naturally when pasted into a message. Other good options are `ln.furman87.com`, `zip.furman87.com`, `hop.furman87.com`, and `s.furman87.com`.
+A small Bitly-style shortener for a personal server. The public URL is `go.fu87.app`: it is short, memorable, and reads naturally when pasted into a message.
 
 ## Run Locally
 
 ```powershell
 $env:POSTGRES_PASSWORD="replace-with-a-long-random-password"
-$env:PUBLIC_BASE_URL="https://go.furman87.com"
+$env:PUBLIC_BASE_URL="https://go.fu87.app"
 docker compose up --build
 ```
 
-The app listens on `http://localhost:8080` by default. Put your reverse proxy in front of it and point `go.furman87.com` to the proxy.
+The app listens on `http://localhost:8080` by default. Put your reverse proxy in front of it and point `go.fu87.app` to the proxy.
 
 ## Deployment
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for Ubuntu 24 instructions using `/opt/shortlinks`, nginx, Certbot, Docker Compose, and `go.furman87.com`.
+See [DEPLOYMENT.md](DEPLOYMENT.md) for Ubuntu 24 instructions using `/opt/shortlinks`, nginx, Certbot, Docker Compose, and `go.fu87.app`.
 
 ## Security Notes
 
-This app intentionally accepts only `http` and `https` URLs, rejects embedded credentials, strips URL fragments, rate-limits short-link creation, blocks `localhost`, blocks `furman87.com` and subdomains, and rejects hosts that are literal or DNS-resolved private/reserved network addresses. Those checks reduce common SSRF, phishing, and self-referential redirect abuse.
+This app intentionally accepts only `http` and `https` URLs, rejects embedded credentials, strips URL fragments, rate-limits short-link creation, blocks `localhost`, blocks `fu87.app` and subdomains, and rejects hosts that are literal or DNS-resolved private/reserved network addresses. Those checks reduce common SSRF, phishing, and self-referential redirect abuse.
 
 Recommended production hardening:
 
